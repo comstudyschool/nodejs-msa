@@ -56,7 +56,7 @@ npm i -D nodemon
     | `models/orderModel.js` | 주문 모델 |
     | `config/db.js` | 데이터베이스 설정 파일 |
     
-    ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/73d32148-7b0b-42ac-9b0b-2bfaa5903e80/34d2f2d0-9e4f-4e12-97be-cbbd5449cb47/image.png)
+    ![image.png](image.png)
     
 
 # **2. REST API 서버 구현**
