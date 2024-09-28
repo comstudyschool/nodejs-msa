@@ -1,5 +1,4 @@
 # 5장: Node.js를 활용하여 모놀리식 서비스 구현, 비즈니스 로직 개발, 데이터베이스 연동 및 테스트
-
 # **1. 파일 구성**
 
 - 새 프로젝트를 생성 하고 필요한 모듈을 설치 합니다.
@@ -57,7 +56,7 @@ npm i -D nodemon
     | `models/orderModel.js` | 주문 모델 |
     | `config/db.js` | 데이터베이스 설정 파일 |
     
-    ![image.png](image.png)
+    ![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/73d32148-7b0b-42ac-9b0b-2bfaa5903e80/34d2f2d0-9e4f-4e12-97be-cbbd5449cb47/image.png)
     
 
 # **2. REST API 서버 구현**
@@ -287,44 +286,148 @@ npm i -D nodemon
 
 # **5. 테스트**
 
+![image.png](image2.png)
+
 - 각 기능이 제대로 작동하는지 확인하고, 오류를 찾아 수정합니다.
 - `Jest`를 사용하여 간단한 테스트 작성
-    - 먼저, Jest를 설치합니다:
+    - 먼저, Jest와 **supertest**를 설치합니다:
     
     ```bash
-    npm install jest --save-dev
+    npm install jest supertest --save-dev
+    ```
+    
+    - app.js를 모듈화 하고 server.js를 추가 해서 listen하도록 수정 합니다. (테스트에서 app모듈 사용)
+    - `app.js`
+    
+    ```jsx
+    const express = require('express');
+    const app = express();
+    const cors = require('cors');
+    
+    app.use(cors());
+    app.use(express.json());
+    app.use(express.urlencoded({extended:false}));
+    
+    app.set('port', 3000);
+    
+    // 라우터 연결
+    const productRoutes = require('./routes/products');
+    app.use('/products', productRoutes);
+    
+    module.exports = app;
+    ```
+    
+    - `server.js`
+    
+    ```jsx
+    // server.js
+    const app = require('./app');
+    
+    const PORT = 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
+    });
+    
     ```
     
     - `tests/productController.test.js`에서 테스트를 작성합니다.
     
     ```jsx
+    // /tests/productController.test.js
     const request = require('supertest');
     const app = require('../app');
+    const db = require('../config/db'); // 데이터베이스 연결 모듈 가져오기
+    let server;
+    
+    beforeAll((done) => {
+      server = app.listen(4000, () => {
+        done();
+      });
+    });
+    
+    afterAll(async () => {
+      await server.close(); // 서버 연결 종료
+      await db.end(); // 데이터베이스 연결 종료
+    });
     
     describe('Product API', () => {
       it('GET /products - should return all products', async () => {
-        const response = await request(app).get('/products');
+        const response = await request(server).get('/products');
         expect(response.statusCode).toBe(200);
         expect(response.body).toBeInstanceOf(Array);
       });
     
       it('POST /products - should create a new product', async () => {
         const newProduct = { name: 'Test Product', price: 100, description: 'Test Description' };
-        const response = await request(app).post('/products').send(newProduct);
+        const response = await request(server).post('/products').send(newProduct);
         expect(response.statusCode).toBe(201);
         expect(response.body.name).toBe(newProduct.name);
       });
     });
     ```
     
+    - `package.json` 파일의 script 수정 (test를 jest로 하도록 수정 합니다.)
+    
+    ```json
+    {
+      "name": "ch05myshop",
+      "version": "1.0.0",
+      "main": "index.js",
+      "scripts": {
+        "dev": "nodemon server.js",
+        **"test": "jest"**
+      },
+      "keywords": [],
+      "author": "",
+      "license": "ISC",
+      "description": "",
+      "dependencies": {
+        "cors": "^2.8.5",
+        "express": "^4.21.0",
+        "mysql2": "^3.11.3"
+      },
+      "devDependencies": {
+        "jest": "^29.7.0",
+        "nodemon": "^3.1.7",
+        "supertest": "^7.0.0"
+      }
+    }
+    ```
+    
 - `npm test` 명령으로 테스트를 실행하고 각 기능이 제대로 동작하는지 확인합니다.
 
-### **요약**
+```json
+npm test
+```
+
+- 실행 결과
+
+```bash
+workspace-nodejs-msa\ch05myshop>**npm test**
+
+> ch05myshop@1.0.0 test
+> jest
+
+ **PASS**  tests/**productController.test.js**
+  Product API
+    **√** GET /products - should return all products (87 ms)                                         
+    **√** POST /products - should create a new product (21 ms)                                       
+                                                                                                 
+**Test Suites:** **1 passed**, 1 total                                                                   
+**Tests:**       **2 passed**, 2 total                                                                   
+**Snapshots:**   0 total
+**Time:**        1.382 s, estimated 2 s
+Ran all test suites.
+```
+
+### JEST 공식 문서
+
+- https://jestjs.io/docs/getting-started
+
+# **요약**
 
 - **파일 구성**: 프로젝트를 효율적으로 관리하기 위해 파일과 폴더를 체계적으로 정리.
 - **REST API 서버 구현**: Express로 API 서버를 만들고 클라이언트 요청을 처리.
 - **MariaDB 연동**: 데이터베이스 연결을 설정하고 데이터를 저장/조회하는 기능 개발.
 - **비즈니스 로직 개발**: 실제 기능(상품, 회원, 구매 관리 등)을 개발.
 - **테스트**: 각 기능이 잘 작동하는지 확인하고 문제를 해결.
-
-이 과정을 통해 Node.js로 모놀리식 서비스를 완전히 구현하고 작동하도록 만들 수 있습니다.

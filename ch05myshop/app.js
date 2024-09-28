@@ -12,6 +12,4 @@ app.set('port', 3000);
 const productRoutes = require('./routes/products');
 app.use('/products', productRoutes);
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
+module.exports = app;
