@@ -1,4 +1,4 @@
-// productController.test.js
+// /tests/productController.test.js
 const request = require('supertest');
 const app = require('../app');
 const db = require('../config/db'); // 데이터베이스 연결 모듈 가져오기
