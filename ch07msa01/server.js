@@ -3,15 +3,15 @@
 const express = require('express');
 const http = require('http');
 
-const msa1 = require('./products');
-const msa2 = require('./users');
-const msa3 = require('./orders');
+const products = require('./products');
+const users = require('./users');
+const orders = require('./orders');
 
 // 메인 애플리케이션을 만듭니다.
 const mainApp = express();
-mainApp.use('/msa1', msa1);
-mainApp.use('/msa2', msa2); 
-mainApp.use('/msa3', msa3);
+mainApp.use('/products', products);
+mainApp.use('/users', users);
+mainApp.use('/orders', orders);
 
 // HTTP 서버 생성
 const server = http.createServer(mainApp);

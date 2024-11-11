@@ -3,7 +3,9 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-let products = [{method:"GET", path:"/products"}]; // 상품 데이터 저장
+let products = [
+  {id:1, title:'Sonata', price:2000}
+]; // 상품 데이터 저장
 
 // 상품 추가
 app.post('/', (req, res) => {

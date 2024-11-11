@@ -3,10 +3,12 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-let products = []; // 상품 데이터 저장
+let products = [
+  {id:1, title:'Sonata', price:2000}
+]; // 상품 데이터 저장
 
 // 상품 추가
-app.post('/products', (req, res) => {
+app.post('/', (req, res) => {
   const product = req.body;
   product.id = products.length + 1; // 상품 ID 생성
   products.push(product);
@@ -14,12 +16,12 @@ app.post('/products', (req, res) => {
 });
 
 // 모든 상품 조회
-app.get('/products', (req, res) => {
+app.get('/', (req, res) => {
   res.json(products);
 });
 
 // 특정 상품 수정
-app.put('/products/:id', (req, res) => {
+app.put('/:id', (req, res) => {
   const productId = parseInt(req.params.id);
   const updatedProduct = req.body;
   const index = products.findIndex(p => p.id === productId);
@@ -33,7 +35,7 @@ app.put('/products/:id', (req, res) => {
 });
 
 // 상품 삭제
-app.delete('/products/:id', (req, res) => {
+app.delete('/:id', (req, res) => {
   products = products.filter(p => p.id !== parseInt(req.params.id));
   res.status(204).send();
 });

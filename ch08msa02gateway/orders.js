@@ -4,7 +4,17 @@ const axios = require('axios'); // 다른 서비스와 통신하기 위해 사�
 const app = express();
 app.use(express.json());
 
-let orders = [{method:"GET", path:"/orders"}]; // 주문 데이터 저장
+let orders = [
+  {
+    id: 1,
+    userId: "hong",
+    productId: 1,
+    productName: 'Sonata',
+    quantity : 1,
+    total: 2000,
+    date: new Date(),
+  }
+]; // 주문 데이터 저장
 
 // 상품 구매 (회원 ID와 상품 ID를 이용해 주문 생성)
 app.post('/', async (req, res) => {

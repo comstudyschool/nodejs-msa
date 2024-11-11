@@ -3,10 +3,12 @@ const express = require('express');
 const app = express();
 app.use(express.json());
 
-let users = []; // 회원 데이터 저장
+let users = [
+  {id:1, email:'hong@test.cm', password:'1234'}
+]; // 회원 데이터 저장
 
 // 회원 가입
-app.post('/users', (req, res) => {
+app.post('/', (req, res) => {
   const user = req.body;
   user.id = users.length + 1; // 회원 ID 생성
   users.push(user);
@@ -14,12 +16,12 @@ app.post('/users', (req, res) => {
 });
 
 // 모든 회원 조회
-app.get('/users', (req, res) => {
+app.get('/', (req, res) => {
   res.json(users);
 });
 
 // 회원 로그인 (간단한 이메일/비밀번호 확인)
-app.post('/users/login', (req, res) => {
+app.post('/login', (req, res) => {
   const { email, password } = req.body;
   const user = users.find(u => u.email === email && u.password === password);
 
