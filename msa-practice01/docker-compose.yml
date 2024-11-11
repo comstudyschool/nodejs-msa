@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # products-service에 연결할 MySQL 컨테이너
+  mysql-products:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: products_db
+    networks:
+      - msa-network
+    volumes:
+      - products-db-data:/var/lib/mysql
+
+  # products-service
+  products-service:
+    build: ./products-service
+    environment:
+      - DB_HOST=mysql-products
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=products_db
+    networks:
+      - msa-network
+    depends_on:
+      - mysql-products
+    ports:
+      - "3001:3001"
+
+  # users-service에 연결할 MySQL 컨테이너
+  mysql-users:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: users_db
+    networks:
+      - msa-network
+    volumes:
+      - users-db-data:/var/lib/mysql
+
+  # users-service
+  users-service:
+    build: ./users-service
+    environment:
+      - DB_HOST=mysql-users
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=users_db
+    networks:
+      - msa-network
+    depends_on:
+      - mysql-users
+    ports:
+      - "3002:3002"
+
+  # order-service에 연결할 MySQL 컨테이너
+  mysql-orders:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: orders_db
+    networks:
+      - msa-network
+    volumes:
+      - orders-db-data:/var/lib/mysql
+
+  # order-service
+  order-service:
+    build: ./order-service
+    environment:
+      - DB_HOST=mysql-orders
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=orders_db
+      - PRODUCTS_API_URL=http://products-service:3001
+    networks:
+      - msa-network
+    depends_on:
+      - mysql-orders
+      - products-service
+    ports:
+      - "3003:3003"
+
+  # API Gateway
+  gateway:
+    build: ./gateway
+    environment:
+      - PRODUCTS_SERVICE_URL=http://products-service:3001
+      - USERS_SERVICE_URL=http://users-service:3002
+      - ORDERS_SERVICE_URL=http://order-service:3003
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    networks:
+      - msa-network
+    depends_on:
+      - products-service
+      - users-service
+      - order-service
+
+networks:
+  msa-network:
+    driver: bridge
+
+volumes:
+  products-db-data:
+  users-db-data:
+  orders-db-data:
