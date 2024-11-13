@@ -1,8 +1,8 @@
-// orders/config.js (환경 설정을 불러오는 파일)
+// users/config.js (환경 설정을 불러오는 파일)
 require('dotenv').config();
 
 const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 3002,
   db: {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
