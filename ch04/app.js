@@ -1,9 +1,17 @@
 // Express를 사용한 간단한 REST API
 const express = require('express');
 const app = express();
+const cors = require('cors');
+
+app.use(cors());
 app.use(express.json());
 
-let products = [];
+let products = [
+  {id:1, name:'Laptop1', price:1200.00, description:'High performance laptop with 16GB RAM and 512GB SSD'},
+  {id:2, name:'Laptop2', price:2200.00, description:'High performance laptop with 16GB RAM and 512GB SSD'},
+  {id:3, name:'Laptop3', price:1500.00, description:'High performance laptop with 16GB RAM and 512GB SSD'},
+  {id:4, name:'Laptop4', price:5500.00, description:'High performance laptop with 16GB RAM and 512GB SSD'}
+];
 
 // 상품 조회
 app.get('/products', (req, res) => {
