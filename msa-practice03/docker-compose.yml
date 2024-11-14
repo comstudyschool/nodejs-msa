@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672" # RabbitMQ 관리 콘솔
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "3001:3001"
+      - "9100:9100" # Prometheus 메트릭 포트
+    depends_on:
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "3002:3002"
+      - "9101:9101" # Prometheus 메트릭 포트
+    depends_on:
+      - rabbitmq
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "3000:3000"
+      - "9102:9102" # Prometheus 메트릭 포트
+    depends_on:
+      - order-service
+      - notification-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090" # Prometheus 웹 UI
+    depends_on:
+      - order-service
+      - notification-service
+      - gateway
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3005:3000" # Grafana 웹 UI
+    depends_on:
+      - prometheus
+
+volumes:
+  prometheus_data:
+  grafana_data:
