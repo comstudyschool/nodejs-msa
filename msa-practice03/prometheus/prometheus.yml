@@ -1,17 +1,35 @@
-const client = require('prom-client');
-const express = require('express');
-const app = express();
+# prometheus.yml
 
-// Prometheus 메트릭 설정
-const collectDefaultMetrics = client.collectDefaultMetrics;
-collectDefaultMetrics({ timeout: 5000 }); // 5초마다 메트릭 수집
+global:
+  scrape_interval: 15s  # 기본 스크랩 간격
+  evaluation_interval: 15s  # 규칙 평가 간격
 
-app.get('/metrics', async (req, res) => {
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
-});
+# 알림 설정 (선택사항)
+# alerting:
+#   alertmanagers:
+#     - static_configs:
+#         - targets: ['localhost:9093']
 
-// 기본 메트릭 수집 중지
-// client.register.clear();
+# 데이터 수집 대상 설정
+scrape_configs:
+  # Prometheus 자체 메트릭 수집
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
 
-module.exports = app;
+  # 예시: 추가 타겟 설정
+  # - job_name: 'node_exporter'
+  #   static_configs:
+  #     - targets: ['localhost:9100']
+
+  - job_name: 'order_service'
+    static_configs:
+      - targets: ['localhost:3001']  # order-service의 메트릭 엔드포인트
+
+  - job_name: 'notification_service'
+    static_configs:
+      - targets: ['localhost:3002']  # notification-service의 메트릭 엔드포인트
+
+  - job_name: 'gateway_service'
+    static_configs:
+      - targets: ['localhost:3003']  # gateway의 메트릭 엔드포인트

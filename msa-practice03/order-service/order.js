@@ -15,6 +15,11 @@ async function connectRabbitMQ() {
   return channel;
 }
 
+app.get("/order", async (req, res) => {
+  console.log('>>> GET - /order');
+  res.end("get - /order");
+});
+
 // 주문 생성 시 이벤트 발행
 app.post('/order', async (req, res) => {
   const { user, product, quantity } = req.body;
@@ -25,6 +30,8 @@ app.post('/order', async (req, res) => {
     quantity,
     date: new Date(),
   };
+
+  console.log(order);
 
   // RabbitMQ에 연결하여 주문 이벤트 발행
   const channel = await connectRabbitMQ();
